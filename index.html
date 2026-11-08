@@ -2,7 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GoalQuest">
+  <meta name="theme-color" content="#DC2F02">
+  <meta name="description" content="Track your goals, build habits, and level up your life!">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23DC2F02' width='192' height='192'/><text x='50%' y='50%' font-size='100' font-weight='bold' text-anchor='middle' dominant-baseline='central' fill='white'>🎯</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23DC2F02' width='192' height='192'/><text x='50%' y='50%' font-size='100' font-weight='bold' text-anchor='middle' dominant-baseline='central' fill='white'>🎯</text></svg>">
+  <link rel="manifest" href="./manifest.json">
   <title>GoalQuest - Home</title>
   <link rel="stylesheet" href="style.css">
   <script src="gamification.js"></script>
@@ -260,23 +268,23 @@
       </div>
 
       <nav>
-        <a href="index.html" class="nav-item active" style="text-decoration: none;">
+        <a href="./index.html" class="nav-item active" style="text-decoration: none;">
           <span class="nav-icon">🏠</span>
           <span>Home</span>
         </a>
-        <a href="goals.html" class="nav-item" style="text-decoration: none;">
+        <a href="./goals.html" class="nav-item" style="text-decoration: none;">
           <span class="nav-icon">📋</span>
           <span>Goals</span>
         </a>
-        <a href="#" class="nav-item" style="text-decoration: none;">
+        <a href="./habits.html" class="nav-item" style="text-decoration: none;">
           <span class="nav-icon">🔥</span>
           <span>Habits</span>
         </a>
-        <a href="#" class="nav-item" style="text-decoration: none;">
+        <a href="./analytics.html" class="nav-item" style="text-decoration: none;">
           <span class="nav-icon">📈</span>
           <span>Progress</span>
         </a>
-        <a href="#" class="nav-item" style="text-decoration: none;">
+        <a href="./settings.html" class="nav-item" style="text-decoration: none;">
           <span class="nav-icon">⚙️</span>
           <span>Settings</span>
         </a>
@@ -746,6 +754,19 @@
 
     // Initialize gamification display on page load
     updateGamificationDisplay();
+  </script>
+
+  <!-- Register Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+        .then(registration => {
+          console.log('Service Worker registered:', registration);
+        })
+        .catch(error => {
+          console.log('Service Worker registration failed:', error);
+        });
+    }
   </script>
 </body>
 </html>
