@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoalQuest - Progress & Analytics</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="gamification.js"></script>
+  <style>
+    .stats-header {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+      animation: fadeInUp 0.5s ease;
+    }
+
+    .big-stat-card {
+      background: white;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    .big-stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .big-stat-value {
+      font-size: 42px;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--coral), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+    }
+
+    .big-stat-label {
+      font-size: 14px;
+      color: var(--slate);
+      font-weight: 600;
+    }
+
+    .big-stat-change {
+      font-size: 12px;
+      margin-top: 8px;
+      padding-top: 12px;
+      border-top: 1px solid #F1F5F9;
+      color: #4A7C1F;
+      font-weight: 600;
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .chart-card {
+      background: white;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      animation: fadeInUp 0.5s ease 0.1s both;
+    }
+
+    .chart-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 250px;
+      margin-bottom: 16px;
+    }
+
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      gap: 12px;
+      height: 200px;
+    }
+
+    .bar {
+      flex: 1;
+      background: linear-gradient(180deg, var(--coral), var(--coral-dark));
+      border-radius: 8px 8px 0 0;
+      position: relative;
+      transition: var(--transition);
+      cursor: pointer;
+      min-height: 20px;
+    }
+
+    .bar:hover {
+      filter: brightness(1.15);
+      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    }
+
+    .bar-label {
+      position: absolute;
+      bottom: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--slate);
+      white-space: nowrap;
+    }
+
+    .bar-value {
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--coral);
+    }
+
+    .progress-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .progress-table-header {
+      border-bottom: 2px solid #F1F5F9;
+    }
+
+    .progress-table-header th {
+      padding: 12px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--slate);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .progress-table-row td {
+      padding: 14px 12px;
+      border-bottom: 1px solid #F8FAFC;
+      font-size: 13px;
+    }
+
+    .progress-table-row:hover {
+      background: var(--slate-light);
+    }
+
+    .goal-name-cell {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .progress-bar-small {
+      height: 6px;
+      background: var(--slate-light);
+      border-radius: 3px;
+      overflow: hidden;
+      width: 100px;
+    }
+
+    .progress-fill-small {
+      height: 100%;
+      background: linear-gradient(90deg, var(--coral), var(--purple));
+      border-radius: 3px;
+    }
+
+    .achievement-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 14px;
+    }
+
+    .achievement-badge {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .achievement-badge.unlocked {
+      background: linear-gradient(135deg, var(--lime-light), var(--teal-light));
+      border: 2px solid rgba(168, 224, 99, 0.6);
+      animation: badgeUnlock 0.5s ease;
+    }
+
+    .achievement-badge.locked {
+      opacity: 0.5;
+      border: 2px dashed #CBD5E1;
+    }
+
+    .achievement-icon {
+      font-size: 36px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .achievement-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .achievement-desc {
+      font-size: 10px;
+      color: var(--slate);
+      margin-top: 4px;
+    }
+
+    .insights-card {
+      background: linear-gradient(135deg, var(--purple-light), var(--sky-light));
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid rgba(168, 85, 247, 0.2);
+      animation: fadeInUp 0.5s ease 0.2s both;
+    }
+
+    .insights-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--purple);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .insight-item {
+      padding: 12px 0;
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.6;
+      border-bottom: 1px solid rgba(168, 85, 247, 0.1);
+    }
+
+    .insight-item:last-child {
+      border-bottom: none;
+    }
+
+    .insight-emoji {
+      margin-right: 8px;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes badgeUnlock {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @media (max-width: 1200px) {
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">🎯</div>
+        <div class="sidebar-logo-text">GoalQuest</div>
+      </div>
+
+      <nav>
+        <a href="index.html" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">🏠</span>
+          <span>Home</span>
+        </a>
+        <a href="goals.html" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">📋</span>
+          <span>Goals</span>
+        </a>
+        <a href="habits.html" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">🔥</span>
+          <span>Habits</span>
+        </a>
+        <a href="analytics.html" class="nav-item active" style="text-decoration: none;">
+          <span class="nav-icon">📈</span>
+          <span>Progress</span>
+        </a>
+        <a href="settings.html" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">⚙️</span>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="#" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">❓</span>
+          <span>Help</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">Progress & Analytics</h1>
+        <p class="page-subtitle">Track your journey and celebrate wins</p>
+      </div>
+
+      <!-- Gamification Summary -->
+      <div class="stats-header" style="animation: fadeInUp 0.5s ease;">
+        <div class="big-stat-card" style="background: linear-gradient(135deg, rgba(220, 47, 2, 0.05), rgba(255, 71, 87, 0.05)); border: 2px solid rgba(220, 47, 2, 0.1);">
+          <div style="font-size: 14px; color: var(--slate); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Your Level</div>
+          <div class="big-stat-value" id="analyticsLevel">1</div>
+          <div style="font-size: 18px; margin: 8px 0;" id="analyticsLevelEmoji">✨</div>
+          <div style="font-size: 14px; color: var(--text-primary); font-weight: 600; margin-bottom: 8px;" id="analyticsLevelTitle">Dreamer</div>
+          <div class="xp-bar" style="margin: 12px 0;">
+            <div class="xp-bar-fill" id="analyticsXpBar" style="width: 0%; background: linear-gradient(90deg, var(--red), #FF4757);"></div>
+          </div>
+          <div style="font-size: 12px; color: var(--slate);">
+            <span id="analyticsXpDisplay">0</span> / <span id="analyticsXpNext">500</span> XP
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Overview -->
+      <div class="stats-header" id="statsHeader">
+        <!-- Generated by JavaScript -->
+      </div>
+
+      <!-- Charts -->
+      <div class="analytics-grid">
+        <!-- Weekly Progress Chart -->
+        <div class="chart-card">
+          <h3>📊 Weekly Progress</h3>
+          <div class="chart-container">
+            <div class="bar-chart" id="weeklyChart">
+              <!-- Bars generated by JavaScript -->
+            </div>
+          </div>
+          <p style="font-size: 12px; color: var(--slate); text-align: center;">Tasks completed this week</p>
+        </div>
+
+        <!-- Goals Progress Table -->
+        <div class="chart-card">
+          <h3>🎯 Goals Overview</h3>
+          <table class="progress-table">
+            <thead class="progress-table-header">
+              <tr>
+                <th>Goal</th>
+                <th>Progress</th>
+              </tr>
+            </thead>
+            <tbody id="goalsTable">
+              <!-- Generated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Achievements -->
+      <div class="chart-card" style="animation: fadeInUp 0.5s ease 0.2s both;">
+        <h3>🏆 Achievements</h3>
+        <div class="achievement-grid" id="achievementsGrid">
+          <!-- Generated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Insights -->
+      <div class="insights-card">
+        <h3>💡 Your Insights</h3>
+        <div id="insightsList">
+          <!-- Generated by JavaScript -->
+        </div>
+      </div>
+
+      <div style="height: 40px;"></div>
+    </main>
+  </div>
+
+  <!-- Floating Action Button -->
+  <button class="fab" title="Add a new goal" onclick="window.location.href='goal-wizard.html'">➕</button>
+
+  <script>
+    const analyticsData = {
+      stats: [
+        { label: "Active Goals", value: "6", change: "+2 this month" },
+        { label: "Completed Goals", value: "12", change: "+1 this week" },
+        { label: "Completion Rate", value: "67%", change: "+5% vs last month" },
+        { label: "Current Streak", value: "7 days", change: "Personal best!" }
+      ],
+      weeklyProgress: [
+        { day: "Mon", tasks: 5 },
+        { day: "Tue", tasks: 7 },
+        { day: "Wed", tasks: 4 },
+        { day: "Thu", tasks: 8 },
+        { day: "Fri", tasks: 6 },
+        { day: "Sat", tasks: 3 },
+        { day: "Sun", tasks: 5 }
+      ],
+      goals: [
+        { name: "Complete Project Demo", progress: 65 },
+        { name: "Fitness Challenge", progress: 40 },
+        { name: "Read 12 Books", progress: 25 },
+        { name: "Learn Design", progress: 55 }
+      ],
+      achievements: [
+        { emoji: "🚀", name: "First Goal", desc: "Create your first goal", unlocked: true },
+        { emoji: "⚡", name: "Speed Runner", desc: "Complete 3 tasks in a day", unlocked: true },
+        { emoji: "🔥", name: "Week Warrior", desc: "7-day streak", unlocked: true },
+        { emoji: "💯", name: "Perfect Week", desc: "100% completion rate", unlocked: false },
+        { emoji: "🏆", name: "Goal Master", desc: "Complete 10 goals", unlocked: false },
+        { emoji: "⭐", name: "Superstar", desc: "30-day streak", unlocked: false }
+      ]
+    };
+
+    function renderStats() {
+      const header = document.getElementById('statsHeader');
+      header.innerHTML = analyticsData.stats.map(stat => `
+        <div class="big-stat-card">
+          <div class="big-stat-value">${stat.value}</div>
+          <div class="big-stat-label">${stat.label}</div>
+          <div class="big-stat-change">✨ ${stat.change}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderWeeklyChart() {
+      const chart = document.getElementById('weeklyChart');
+      const maxTasks = Math.max(...analyticsData.weeklyProgress.map(d => d.tasks));
+
+      chart.innerHTML = analyticsData.weeklyProgress.map(day => `
+        <div style="flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;">
+          <div class="bar" style="height: ${(day.tasks / maxTasks) * 180}px; cursor: pointer;"
+               onclick="alert('${day.day}: ${day.tasks} tasks completed')"
+               title="${day.day}: ${day.tasks} tasks">
+            <div class="bar-value">${day.tasks}</div>
+          </div>
+          <div class="bar-label">${day.day}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderGoalsTable() {
+      const table = document.getElementById('goalsTable');
+      table.innerHTML = analyticsData.goals.map(goal => `
+        <tr class="progress-table-row">
+          <td class="goal-name-cell">${goal.name}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="progress-bar-small">
+                <div class="progress-fill-small" style="width: ${goal.progress}%;"></div>
+              </div>
+              <span style="font-weight: 700; color: var(--coral);">${goal.progress}%</span>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderAchievements() {
+      const grid = document.getElementById('achievementsGrid');
+      grid.innerHTML = analyticsData.achievements.map(achievement => `
+        <div class="achievement-badge ${achievement.unlocked ? 'unlocked' : 'locked'}">
+          <span class="achievement-icon">${achievement.emoji}</span>
+          <div class="achievement-name">${achievement.name}</div>
+          <div class="achievement-desc">${achievement.desc}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderInsights() {
+      const insights = [
+        { emoji: '📈', text: 'You\'re 40% more productive on weekdays than weekends.' },
+        { emoji: '🔥', text: 'Your longest streak is 23 days! Keep it up!' },
+        { emoji: '💪', text: 'You\'re most active on Thursdays. Great momentum!' },
+        { emoji: '⏰', text: 'Completing tasks in the morning has higher success rate.' },
+        { emoji: '🎯', text: 'Career goals are your most consistent category.' }
+      ];
+
+      const list = document.getElementById('insightsList');
+      list.innerHTML = insights.map(insight => `
+        <div class="insight-item">
+          <span class="insight-emoji">${insight.emoji}</span>${insight.text}
+        </div>
+      `).join('');
+    }
+
+    // Update gamification display
+    const progress = getXPProgress();
+    document.getElementById('analyticsLevel').textContent = progress.currentLevel.level;
+    document.getElementById('analyticsLevelEmoji').textContent = progress.currentLevel.emoji;
+    document.getElementById('analyticsLevelTitle').textContent = progress.currentLevel.title;
+    document.getElementById('analyticsXpDisplay').textContent = progress.currentXP.toLocaleString();
+    document.getElementById('analyticsXpNext').textContent = progress.nextLevelXP.toLocaleString();
+    document.getElementById('analyticsXpBar').style.width = progress.progress + '%';
+
+    renderStats();
+    renderWeeklyChart();
+    renderGoalsTable();
+    renderAchievements();
+    renderInsights();
+  </script>
+</body>
+</html>

@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoalQuest - Settings</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="gamification.js"></script>
+  <style>
+    .settings-container {
+      max-width: 700px;
+      animation: fadeInUp 0.5s ease;
+    }
+
+    .settings-section {
+      background: white;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 20px;
+      transition: var(--transition);
+    }
+
+    .settings-section:hover {
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .settings-section h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid #F1F5F9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .settings-section-icon {
+      font-size: 18px;
+    }
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid #F8FAFC;
+      transition: var(--transition);
+    }
+
+    .settings-row:last-child {
+      border-bottom: none;
+    }
+
+    .settings-row:hover {
+      background: var(--slate-light);
+      padding-left: 8px;
+      padding-right: 8px;
+      margin: 0 -8px;
+      border-radius: 8px;
+    }
+
+    .settings-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .settings-desc {
+      font-size: 13px;
+      color: var(--slate);
+      margin-top: 2px;
+    }
+
+    .settings-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .settings-select, .settings-input {
+      padding: 9px 14px;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 50px;
+      font-family: var(--font);
+      font-size: 13px;
+      outline: none;
+      background: white;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .settings-select:focus, .settings-input:focus {
+      border-color: var(--coral);
+      box-shadow: 0 0 0 3px rgba(255,107,107,0.1);
+    }
+
+    .toggle {
+      position: relative;
+      width: 50px;
+      height: 28px;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #CBD5E1;
+      border-radius: 28px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: var(--transition);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    input:checked + .toggle-slider {
+      background: var(--coral);
+    }
+
+    input:checked + .toggle-slider::before {
+      transform: translateX(22px);
+    }
+
+    .danger-zone {
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.05), rgba(255, 143, 83, 0.05));
+      border: 1px solid rgba(255, 107, 107, 0.2);
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .danger-zone-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--coral);
+      margin-bottom: 12px;
+    }
+
+    .danger-btn {
+      width: 100%;
+      padding: 12px;
+      background: white;
+      border: 2px solid var(--coral);
+      color: var(--coral);
+      border-radius: 50px;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .danger-btn:hover {
+      background: var(--coral-light);
+    }
+
+    .color-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .color-option {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: var(--transition);
+    }
+
+    .color-option:hover {
+      transform: scale(1.1);
+    }
+
+    .color-option.selected {
+      border-color: var(--text-primary);
+      box-shadow: 0 0 0 2px white, 0 0 0 4px var(--text-primary);
+    }
+
+    .notification-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: var(--slate-light);
+      border-radius: 12px;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .notification-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: var(--slate-light);
+      border-radius: 14px;
+      margin-bottom: 16px;
+    }
+
+    .user-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--coral), var(--purple));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .user-info h4 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .user-info p {
+      font-size: 12px;
+      color: var(--slate);
+    }
+
+    .btn-save {
+      width: 100%;
+      padding: 14px 24px;
+      background: linear-gradient(135deg, var(--coral), #FF8E53);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
+      margin-top: 24px;
+    }
+
+    .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255, 107, 107, 0.4);
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 800px) {
+      .settings-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .settings-control {
+        width: 100%;
+      }
+
+      .settings-select {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">🎯</div>
+        <div class="sidebar-logo-text">GoalQuest</div>
+      </div>
+
+      <nav>
+        <a href="index.html" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">🏠</span>
+          <span>Home</span>
+        </a>
+        <a href="goals.html" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">📋</span>
+          <span>Goals</span>
+        </a>
+        <a href="habits.html" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">🔥</span>
+          <span>Habits</span>
+        </a>
+        <a href="analytics.html" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">📈</span>
+          <span>Progress</span>
+        </a>
+        <a href="settings.html" class="nav-item active" style="text-decoration: none;">
+          <span class="nav-icon">⚙️</span>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="#" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">❓</span>
+          <span>Help</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">Settings</h1>
+        <p class="page-subtitle">Customize your GoalQuest experience</p>
+      </div>
+
+      <div class="settings-container">
+        <!-- Profile Section -->
+        <div class="settings-section">
+          <h3><span class="settings-section-icon">👤</span>Profile</h3>
+          <div class="user-profile">
+            <div class="user-avatar">👋</div>
+            <div class="user-info">
+              <h4>Sarah Johnson</h4>
+              <p>sarah@example.com</p>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Full Name</div>
+              <div class="settings-desc">Update your display name</div>
+            </div>
+            <div class="settings-control">
+              <input type="text" class="settings-input" value="Sarah Johnson" placeholder="Your name">
+            </div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Email</div>
+              <div class="settings-desc">Your account email</div>
+            </div>
+            <div class="settings-control">
+              <input type="email" class="settings-input" value="sarah@example.com" placeholder="Your email">
+            </div>
+          </div>
+        </div>
+
+        <!-- Preferences Section -->
+        <div class="settings-section">
+          <h3><span class="settings-section-icon">🎨</span>Preferences</h3>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Theme</div>
+              <div class="settings-desc">Choose your preferred theme</div>
+            </div>
+            <div class="settings-control">
+              <select class="settings-select">
+                <option>Light Mode</option>
+                <option>Dark Mode</option>
+                <option>Auto (System)</option>
+              </select>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Accent Color</div>
+              <div class="settings-desc">Customize your primary color</div>
+            </div>
+            <div class="color-picker-grid">
+              <div class="color-option selected" style="background: #FF6B6B;" title="Coral"></div>
+              <div class="color-option" style="background: #4ECDC4;" title="Teal" onclick="selectColor(this)"></div>
+              <div class="color-option" style="background: #A855F7;" title="Purple" onclick="selectColor(this)"></div>
+              <div class="color-option" style="background: #FFC107;" title="Amber" onclick="selectColor(this)"></div>
+              <div class="color-option" style="background: #A8E063;" title="Lime" onclick="selectColor(this)"></div>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Language</div>
+              <div class="settings-desc">Select your preferred language</div>
+            </div>
+            <div class="settings-control">
+              <select class="settings-select">
+                <option>English</option>
+                <option>Spanish</option>
+                <option>French</option>
+                <option>German</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications Section -->
+        <div class="settings-section">
+          <h3><span class="settings-section-icon">🔔</span>Notifications</h3>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Enable Notifications</div>
+              <div class="settings-desc">Receive app notifications</div>
+            </div>
+            <div class="settings-control">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Daily Reminders</div>
+              <div class="settings-desc">Remind me to check my goals</div>
+            </div>
+            <div class="settings-control">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Achievement Alerts</div>
+              <div class="settings-desc">Celebrate your milestones</div>
+            </div>
+            <div class="settings-control">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Weekly Summary</div>
+              <div class="settings-desc">Get your weekly progress report</div>
+            </div>
+            <div class="settings-control">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Reminder Time</div>
+              <div class="settings-desc">When to receive reminders</div>
+            </div>
+            <div class="settings-control">
+              <input type="time" class="settings-input" value="09:00">
+            </div>
+          </div>
+        </div>
+
+        <!-- Privacy & Security -->
+        <div class="settings-section">
+          <h3><span class="settings-section-icon">🔒</span>Privacy & Security</h3>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Profile Visibility</div>
+              <div class="settings-desc">Who can see your progress</div>
+            </div>
+            <div class="settings-control">
+              <select class="settings-select">
+                <option>Only Me</option>
+                <option>Friends</option>
+                <option>Public</option>
+              </select>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Two-Factor Authentication</div>
+              <div class="settings-desc">Enhanced security for your account</div>
+            </div>
+            <div class="settings-control">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Data Backup</div>
+              <div class="settings-desc">Automatically backup your goals</div>
+            </div>
+            <div class="settings-control">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Goals Settings -->
+        <div class="settings-section">
+          <h3><span class="settings-section-icon">🎯</span>Goals</h3>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Show Completed Goals</div>
+              <div class="settings-desc">Display finished goals in list</div>
+            </div>
+            <div class="settings-control">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Default Goal Duration</div>
+              <div class="settings-desc">Suggested timeline for new goals</div>
+            </div>
+            <div class="settings-control">
+              <select class="settings-select">
+                <option>30 Days</option>
+                <option>60 Days</option>
+                <option>90 Days</option>
+                <option>6 Months</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="settings-section">
+          <h3><span class="settings-section-icon">⚠️</span>Account</h3>
+          <div class="danger-zone">
+            <div class="danger-zone-title">Clear All Data</div>
+            <p style="font-size: 12px; color: var(--slate); margin-bottom: 12px;">
+              This will permanently delete all your goals and habits. This action cannot be undone.
+            </p>
+            <button class="danger-btn" onclick="if(confirm('Are you sure? This cannot be undone.')) alert('Data cleared! (Demo)')">
+              🗑️ Clear All Data
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-save" onclick="saveSettings()">💾 Save Settings</button>
+      </div>
+
+      <div style="height: 40px;"></div>
+    </main>
+  </div>
+
+  <script>
+    function selectColor(element) {
+      document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+      element.classList.add('selected');
+    }
+
+    function saveSettings() {
+      // Save to localStorage
+      const settings = {
+        theme: document.querySelector('.settings-select').value,
+        notifications: true,
+        reminderTime: document.querySelector('input[type="time"]').value
+      };
+
+      localStorage.setItem('goalQuestSettings', JSON.stringify(settings));
+
+      const btn = event.target;
+      const originalText = btn.textContent;
+      btn.textContent = '✅ Settings Saved!';
+      btn.style.background = 'linear-gradient(135deg, var(--lime), var(--sky))';
+
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.background = '';
+      }, 2000);
+    }
+  </script>
+</body>
+</html>

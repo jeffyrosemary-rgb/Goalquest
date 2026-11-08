@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoalQuest - Goal Detail</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="gamification.js"></script>
+  <style>
+    .detail-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      animation: fadeInDown 0.5s ease;
+    }
+
+    .back-btn {
+      background: var(--white);
+      border: 2px solid #E5E7EB;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .back-btn:hover {
+      border-color: var(--coral);
+      transform: scale(1.05);
+    }
+
+    .goal-hero-card {
+      background: linear-gradient(135deg, var(--coral), var(--purple));
+      border-radius: 24px;
+      padding: 40px;
+      color: white;
+      margin-bottom: 28px;
+      box-shadow: 0 12px 40px rgba(255,107,107,0.3);
+      animation: slideInRight 0.5s ease;
+    }
+
+    .goal-hero-emoji {
+      font-size: 56px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .goal-hero-title {
+      font-size: 32px;
+      font-weight: 900;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    .goal-hero-desc {
+      font-size: 15px;
+      opacity: 0.9;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .goal-hero-meta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .hero-meta-item {
+      background: rgba(255,255,255,0.2);
+      padding: 10px 16px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .detail-section {
+      background: white;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      animation: fadeInUp 0.5s ease 0.1s both;
+    }
+
+    .detail-section h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-icon {
+      font-size: 20px;
+    }
+
+    .large-progress-ring {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .progress-ring-svg {
+      width: 150px;
+      height: 150px;
+      transform: rotate(-90deg);
+      margin-bottom: 16px;
+    }
+
+    .progress-text {
+      text-align: center;
+    }
+
+    .progress-value {
+      font-size: 36px;
+      font-weight: 900;
+      color: var(--coral);
+    }
+
+    .progress-label {
+      font-size: 13px;
+      color: var(--slate);
+      margin-top: 4px;
+    }
+
+    .milestone-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #F1F5F9;
+    }
+
+    .milestone-item:last-child {
+      border-bottom: none;
+    }
+
+    .milestone-checkbox {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #CBD5E1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .milestone-checkbox:hover {
+      border-color: var(--coral);
+    }
+
+    .milestone-checkbox.checked {
+      background: var(--coral);
+      border-color: var(--coral);
+      color: white;
+    }
+
+    .milestone-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .milestone-text.done {
+      text-decoration: line-through;
+      color: var(--slate);
+    }
+
+    .stat-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .stat-box {
+      background: var(--slate-light);
+      padding: 16px;
+      border-radius: 14px;
+      text-align: center;
+    }
+
+    .stat-box-value {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--coral);
+      margin-bottom: 4px;
+    }
+
+    .stat-box-label {
+      font-size: 12px;
+      color: var(--slate);
+      font-weight: 600;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 50px;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .action-btn.primary {
+      background: var(--coral);
+      color: white;
+    }
+
+    .action-btn.primary:hover {
+      background: var(--coral-dark);
+      transform: translateY(-2px);
+    }
+
+    .action-btn.secondary {
+      background: var(--slate-light);
+      color: var(--slate);
+      border: 2px solid transparent;
+    }
+
+    .action-btn.secondary:hover {
+      border-color: var(--coral);
+      color: var(--coral);
+    }
+
+    .full-width-section {
+      grid-column: 1 / -1;
+    }
+
+    .journal-input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .journal-input {
+      flex: 1;
+      padding: 12px 18px;
+      border: 2px solid #E5E7EB;
+      border-radius: 50px;
+      font-family: var(--font);
+      font-size: 14px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .journal-input:focus {
+      border-color: var(--coral);
+      box-shadow: 0 0 0 3px rgba(255,107,107,0.1);
+    }
+
+    .journal-submit {
+      padding: 12px 24px;
+      background: var(--coral);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-family: var(--font);
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .journal-submit:hover {
+      background: var(--coral-dark);
+      transform: translateY(-2px);
+    }
+
+    .journal-entries {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .journal-entry {
+      background: var(--slate-light);
+      border-radius: 14px;
+      padding: 14px 16px;
+      animation: slideInLeft 0.3s ease;
+    }
+
+    .journal-entry-time {
+      font-size: 11px;
+      color: var(--slate);
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    .journal-entry-text {
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @media (max-width: 1100px) {
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">🎯</div>
+        <div class="sidebar-logo-text">GoalQuest</div>
+      </div>
+
+      <nav>
+        <a href="index.html" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">🏠</span>
+          <span>Home</span>
+        </a>
+        <a href="goals.html" class="nav-item active" style="text-decoration: none;">
+          <span class="nav-icon">📋</span>
+          <span>Goals</span>
+        </a>
+        <a href="#" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">🔥</span>
+          <span>Habits</span>
+        </a>
+        <a href="#" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">📈</span>
+          <span>Progress</span>
+        </a>
+        <a href="#" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">⚙️</span>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="#" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">❓</span>
+          <span>Help</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Back Button -->
+      <div class="detail-header">
+        <button class="back-btn" onclick="window.history.back()">←</button>
+        <h1 class="page-title" id="pageTitle">Goal Details</h1>
+      </div>
+
+      <!-- Goal Hero Card -->
+      <div class="goal-hero-card" id="heroCard">
+        <div class="goal-hero-emoji" id="heroEmoji">🎯</div>
+        <h1 class="goal-hero-title" id="heroTitle">Goal Title</h1>
+        <p class="goal-hero-desc" id="heroDesc">Goal description goes here</p>
+        <div class="goal-hero-meta">
+          <div class="hero-meta-item" id="metaStatus">Status</div>
+          <div class="hero-meta-item" id="metaPriority">Priority</div>
+          <div class="hero-meta-item" id="metaDeadline">Deadline</div>
+        </div>
+      </div>
+
+      <!-- Details Grid -->
+      <div class="detail-grid">
+        <!-- Progress Section -->
+        <div class="detail-section">
+          <h3><span class="section-icon">📊</span>Progress</h3>
+          <div class="large-progress-ring">
+            <svg class="progress-ring-svg" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#F1F5F9" stroke-width="8"></circle>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="url(#gradientProgress)" stroke-width="8" stroke-dasharray="251" id="progressRing" stroke-dashoffset="100"></circle>
+              <defs>
+                <linearGradient id="gradientProgress" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#FF6B6B;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#A855F7;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="progress-text">
+              <div class="progress-value" id="progressValue">65%</div>
+              <div class="progress-label">Complete</div>
+            </div>
+          </div>
+          <div class="stat-info">
+            <div class="stat-box">
+              <div class="stat-box-value" id="tasksCompleted">13</div>
+              <div class="stat-box-label">Tasks Done</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-value" id="tasksRemaining">7</div>
+              <div class="stat-box-label">Remaining</div>
+            </div>
+          </div>
+          <div class="action-buttons">
+            <button class="action-btn primary" onclick="logProgressWithXP()">Log Progress</button>
+            <button class="action-btn secondary" onclick="alert('Edit goal')">Edit</button>
+          </div>
+        </div>
+
+        <!-- Milestones Section -->
+        <div class="detail-section">
+          <h3><span class="section-icon">✅</span>Milestones</h3>
+          <div class="goals-list" id="milestonesList">
+            <!-- Milestones will be inserted here -->
+          </div>
+        </div>
+
+        <!-- Journal Section -->
+        <div class="detail-section full-width-section">
+          <h3><span class="section-icon">📝</span>Journal Entries</h3>
+          <div class="journal-input-row">
+            <input
+              type="text"
+              class="journal-input"
+              id="journalInput"
+              placeholder="How did it go today?"
+            >
+            <button class="journal-submit" onclick="addJournalEntry()">Add</button>
+          </div>
+          <div class="journal-entries" id="journalEntries">
+            <!-- Entries will be inserted here -->
+          </div>
+        </div>
+      </div>
+
+      <div style="height: 40px;"></div>
+    </main>
+  </div>
+
+  <!-- Floating Action Button -->
+  <button class="fab" title="Add a new goal" onclick="window.location.href='goal-wizard.html'">➕</button>
+
+  <script>
+    // Get goal ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const goalId = urlParams.get('id') || 1;
+
+    // Sample goals data
+    const goalsData = {
+      1: {
+        title: "Complete Project Demo",
+        emoji: "💼",
+        description: "Finish and present the project demo to stakeholders",
+        category: "career",
+        priority: "high",
+        status: "active",
+        progress: 65,
+        deadline: "Dec 15, 2024",
+        tasksCompleted: 13,
+        tasksTotal: 20,
+        milestones: [
+          { text: "Requirements gathering", done: true },
+          { text: "Design mockups", done: true },
+          { text: "Development phase", done: true },
+          { text: "Testing and QA", done: false },
+          { text: "Final presentation", done: false }
+        ],
+        journalEntries: [
+          { date: "Today at 2:30 PM", text: "Made great progress on the UI components. Team reviewed the designs and gave positive feedback." },
+          { date: "Yesterday at 4:15 PM", text: "Started development on the backend API. Database schema is finalized." }
+        ]
+      },
+      2: {
+        title: "Fitness Challenge",
+        emoji: "💪",
+        description: "Exercise 5 times a week for 3 months",
+        category: "fitness",
+        priority: "high",
+        status: "active",
+        progress: 40,
+        deadline: "Mar 31, 2025",
+        tasksCompleted: 8,
+        tasksTotal: 20,
+        milestones: [
+          { text: "First week streak", done: true },
+          { text: "Month 1 complete", done: false },
+          { text: "Month 2 complete", done: false },
+          { text: "Final month challenge", done: false }
+        ],
+        journalEntries: [
+          { date: "Today at 7:00 AM", text: "Great workout! Did 5km run and strength training. Feeling energized for the day." },
+          { date: "3 days ago", text: "Missed one workout this week but got back on track today." }
+        ]
+      }
+    };
+
+    const goal = goalsData[goalId] || goalsData[1];
+
+    function renderGoalDetail() {
+      // Hero card
+      document.getElementById('heroEmoji').textContent = goal.emoji;
+      document.getElementById('heroTitle').textContent = goal.title;
+      document.getElementById('heroDesc').textContent = goal.description;
+      document.getElementById('metaStatus').textContent = `Status: ${goal.status.charAt(0).toUpperCase() + goal.status.slice(1)}`;
+      document.getElementById('metaPriority').textContent = `Priority: ${goal.priority.charAt(0).toUpperCase() + goal.priority.slice(1)}`;
+      document.getElementById('metaDeadline').textContent = `Due: ${goal.deadline}`;
+      document.getElementById('pageTitle').textContent = goal.title;
+
+      // Progress
+      document.getElementById('progressValue').textContent = goal.progress + '%';
+      document.getElementById('tasksCompleted').textContent = goal.tasksCompleted;
+      document.getElementById('tasksRemaining').textContent = goal.tasksTotal - goal.tasksCompleted;
+
+      // SVG progress ring
+      const circumference = 2 * Math.PI * 40;
+      const offset = circumference * (1 - goal.progress / 100);
+      document.getElementById('progressRing').style.strokeDashoffset = offset;
+
+      // Milestones
+      const milestonesList = document.getElementById('milestonesList');
+      milestonesList.innerHTML = goal.milestones.map(m => `
+        <div class="milestone-item">
+          <div class="milestone-checkbox ${m.done ? 'checked' : ''}" onclick="toggleMilestone(event)">
+            ${m.done ? '✓' : ''}
+          </div>
+          <div class="milestone-text ${m.done ? 'done' : ''}">${m.text}</div>
+        </div>
+      `).join('');
+
+      // Journal entries
+      const journalEntries = document.getElementById('journalEntries');
+      journalEntries.innerHTML = goal.journalEntries.map(e => `
+        <div class="journal-entry">
+          <div class="journal-entry-time">${e.date}</div>
+          <div class="journal-entry-text">${e.text}</div>
+        </div>
+      `).join('');
+    }
+
+    function toggleMilestone(event) {
+      event.currentTarget.classList.toggle('checked');
+      event.currentTarget.nextElementSibling.classList.toggle('done');
+    }
+
+    function addJournalEntry() {
+      const input = document.getElementById('journalInput');
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      const journalEntries = document.getElementById('journalEntries');
+      const entry = document.createElement('div');
+      entry.className = 'journal-entry';
+      entry.innerHTML = `
+        <div class="journal-entry-time">Just now</div>
+        <div class="journal-entry-text">${text}</div>
+      `;
+      journalEntries.insertBefore(entry, journalEntries.firstChild);
+      input.value = '';
+
+      // Award XP for journal entry
+      addXP(5, 'Journal entry written');
+    }
+
+    function logProgressWithXP() {
+      addXP(15, 'Progress logged');
+      alert('✨ Progress logged! +15 XP');
+    }
+
+    renderGoalDetail();
+  </script>
+</body>
+</html>

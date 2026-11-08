@@ -1,0 +1,28 @@
+# Netlify Configuration for GoalQuest
+
+[build]
+  # No build step needed - pure static HTML
+  publish = "."
+  command = "echo 'Deploying GoalQuest!'"
+
+# Redirect all routes to index.html for SPA compatibility
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Cache settings
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Custom headers
+[context.production]
+  command = "echo 'Production deploy'"
+  environment = { SITE_NAME = "goalquest" }

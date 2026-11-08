@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoalQuest - Habits</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="gamification.js"></script>
+  <style>
+    .habits-hero {
+      background: linear-gradient(135deg, #FFBE0B, #FB5607);
+      border-radius: 24px;
+      padding: 32px 36px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 28px;
+      box-shadow: 0 10px 36px rgba(255, 190, 11, 0.35);
+      animation: slideInRight 0.5s ease;
+    }
+
+    .streak-flame {
+      font-size: 60px;
+      animation: flameWiggle 1.5s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    .streak-info h2 {
+      font-size: 52px;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .streak-info p {
+      font-size: 16px;
+      opacity: 0.92;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .streak-best {
+      font-size: 13px;
+      opacity: 0.78;
+    }
+
+    .heatmap-section {
+      background: white;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 28px;
+      animation: fadeInUp 0.5s ease 0.1s both;
+    }
+
+    .heatmap-section h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: auto repeat(7, 1fr);
+      gap: 4px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+
+    .heatmap-day-label {
+      display: flex;
+      align-items: center;
+      color: var(--slate);
+      font-size: 11px;
+      font-weight: 600;
+      height: 28px;
+      padding-right: 8px;
+      width: 40px;
+    }
+
+    .heatmap-cell {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      transition: transform 0.15s, box-shadow 0.2s;
+      cursor: default;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .heatmap-cell:hover {
+      transform: scale(1.3);
+      z-index: 10;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .heatmap-cell.level-0 { background: #F1F5F9; }
+    .heatmap-cell.level-1 { background: #A5F3FC; color: #0E7490; }
+    .heatmap-cell.level-2 { background: #22D3EE; color: white; }
+    .heatmap-cell.level-3 { background: #0E7490; color: white; }
+    .heatmap-cell.level-4 { background: #164E63; color: white; }
+
+    .habits-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      animation: fadeInUp 0.5s ease 0.2s both;
+    }
+
+    .habit-card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+    }
+
+    .habit-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .habit-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .habit-emoji {
+      font-size: 28px;
+    }
+
+    .habit-streak-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--amber-light);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #B45309;
+    }
+
+    .habit-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .habit-frequency {
+      font-size: 13px;
+      color: var(--slate);
+      margin-bottom: 14px;
+      font-weight: 500;
+    }
+
+    .habit-dots {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .habit-dot {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2px solid #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: var(--slate);
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .habit-dot:hover {
+      transform: scale(1.2);
+    }
+
+    .habit-dot.done {
+      background: var(--sky);
+      border-color: var(--sky);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .habit-dot.today.pending {
+      border-color: var(--coral);
+      border-width: 3px;
+    }
+
+    .done-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, var(--sky), #38BDF8);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .done-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
+    }
+
+    .done-btn.already-done {
+      background: var(--lime-light);
+      color: #4A7C1F;
+    }
+
+    .add-habit-btn {
+      background: white;
+      border: 2px dashed #CBD5E1;
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+      color: var(--slate);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 500;
+      min-height: 240px;
+    }
+
+    .add-habit-btn:hover {
+      border-color: var(--sky);
+      color: var(--sky);
+      background: var(--sky-light);
+    }
+
+    .add-icon {
+      font-size: 32px;
+    }
+
+    .leaderboard-section {
+      background: white;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      animation: fadeInUp 0.5s ease 0.3s both;
+    }
+
+    .leaderboard-section h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .leaderboard-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid #F1F5F9;
+    }
+
+    .leaderboard-item:last-child {
+      border-bottom: none;
+    }
+
+    .leaderboard-rank {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--coral);
+      min-width: 30px;
+    }
+
+    .leaderboard-rank.gold { color: #FFC107; }
+    .leaderboard-rank.silver { color: #A6ACAF; }
+    .leaderboard-rank.bronze { color: #CD7F32; }
+
+    .leaderboard-info {
+      flex: 1;
+    }
+
+    .leaderboard-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .leaderboard-streak {
+      font-size: 12px;
+      color: var(--slate);
+    }
+
+    .leaderboard-count {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--coral);
+      min-width: 50px;
+      text-align: right;
+    }
+
+    @keyframes flameWiggle {
+      0%, 100% { transform: rotate(-4deg) scale(1); }
+      25% { transform: rotate(4deg) scale(1.06); }
+      50% { transform: rotate(-3deg) scale(1.12); }
+      75% { transform: rotate(3deg) scale(1.06); }
+    }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">🎯</div>
+        <div class="sidebar-logo-text">GoalQuest</div>
+      </div>
+
+      <nav>
+        <a href="index.html" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">🏠</span>
+          <span>Home</span>
+        </a>
+        <a href="goals.html" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">📋</span>
+          <span>Goals</span>
+        </a>
+        <a href="habits.html" class="nav-item active" style="text-decoration: none;">
+          <span class="nav-icon">🔥</span>
+          <span>Habits</span>
+        </a>
+        <a href="analytics.html" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">📈</span>
+          <span>Progress</span>
+        </a>
+        <a href="settings.html" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">⚙️</span>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="#" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">❓</span>
+          <span>Help</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">Daily Habits</h1>
+        <p class="page-subtitle">Build consistency, one day at a time</p>
+      </div>
+
+      <!-- Streak Hero -->
+      <div class="habits-hero">
+        <span class="streak-flame">🔥</span>
+        <div class="streak-info">
+          <h2>7</h2>
+          <p>Day Streak</p>
+          <div class="streak-best">Best: 23 days 🏆</div>
+        </div>
+      </div>
+
+      <!-- Heatmap -->
+      <div class="heatmap-section">
+        <h3>📅 Activity Overview</h3>
+        <div class="heatmap-grid" id="heatmapGrid">
+          <!-- Generated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Habits Grid -->
+      <div style="margin-bottom: 28px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div style="font-size: 17px; font-weight: 700;">Your Habits</div>
+        </div>
+        <div class="habits-list" id="habitsList">
+          <!-- Habits will be generated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="leaderboard-section">
+        <h3>🏆 Leaderboard</h3>
+        <div id="leaderboard">
+          <!-- Leaderboard items generated by JavaScript -->
+        </div>
+      </div>
+
+      <div style="height: 40px;"></div>
+    </main>
+  </div>
+
+  <!-- Floating Action Button -->
+  <button class="fab" title="Add a new habit" onclick="addNewHabit()">➕</button>
+
+  <script>
+    const habitsData = [
+      { id: 1, name: "Morning Run", emoji: "🏃", frequency: "Daily", streak: 7, best: 12, lastDays: [1,1,1,1,0,1,1,0,1,1,1,1,1,1] },
+      { id: 2, name: "Read 30 mins", emoji: "📚", frequency: "Daily", streak: 3, best: 8, lastDays: [0,1,1,1,0,0,1,1,0,1,0,1,1,1] },
+      { id: 3, name: "Meditation", emoji: "🧘", frequency: "Daily", streak: 14, best: 14, lastDays: [1,1,1,1,1,1,1,1,1,1,1,1,1,1] },
+      { id: 4, name: "Code Daily", emoji: "💻", frequency: "Daily", streak: 5, best: 21, lastDays: [1,1,0,1,1,0,1,1,0,0,1,1,1,1] },
+    ];
+
+    const leaderboardData = [
+      { name: "You", streak: 7, total: 145, rank: 1 },
+      { name: "Alex", streak: 12, total: 238, rank: 2 },
+      { name: "Jordan", streak: 5, total: 89, rank: 3 },
+    ];
+
+    function renderHeatmap() {
+      const grid = document.getElementById('heatmapGrid');
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+      // Add day labels
+      grid.innerHTML = '<div class="heatmap-day-label"></div>';
+      days.forEach(day => {
+        const label = document.createElement('div');
+        label.className = 'heatmap-day-label';
+        label.textContent = day.substring(0, 1);
+        grid.appendChild(label);
+      });
+
+      // Generate heatmap cells (14 weeks)
+      for (let week = 0; week < 14; week++) {
+        const weekLabel = document.createElement('div');
+        weekLabel.className = 'heatmap-day-label';
+        weekLabel.textContent = week === 0 ? 'W1' : '';
+        weekLabel.style.fontSize = '9px';
+        grid.appendChild(weekLabel);
+
+        for (let day = 0; day < 7; day++) {
+          const cell = document.createElement('div');
+          cell.className = 'heatmap-cell';
+          const level = Math.floor(Math.random() * 5);
+          cell.classList.add(`level-${level}`);
+
+          if (level > 0) cell.textContent = '✓';
+          cell.title = `Week ${week + 1}, ${days[day]}: ${['None', '1', '2', '3', '4+'][level]} habit(s)`;
+
+          grid.appendChild(cell);
+        }
+      }
+    }
+
+    function renderHabits() {
+      const list = document.getElementById('habitsList');
+      list.innerHTML = habitsData.map(habit => `
+        <div class="habit-card">
+          <div class="habit-card-header">
+            <span class="habit-emoji">${habit.emoji}</span>
+            <div class="habit-streak-badge">🔥 ${habit.streak} days</div>
+          </div>
+          <div class="habit-title">${habit.name}</div>
+          <div class="habit-frequency">${habit.frequency}</div>
+          <div class="habit-dots">
+            ${habit.lastDays.map((done, i) => `
+              <div class="habit-dot ${done ? 'done' : ''} ${i === habit.lastDays.length - 1 ? 'today pending' : ''}"
+                   onclick="toggleHabitDay(${habit.id}, ${i})"
+                   title="Day ${i + 1}">
+                ${done ? '✓' : ''}
+              </div>
+            `).join('')}
+          </div>
+          <button class="done-btn" onclick="markHabitDone(${habit.id})">Check Off Today</button>
+        </div>
+      `).join('');
+    }
+
+    function renderLeaderboard() {
+      const board = document.getElementById('leaderboard');
+      board.innerHTML = leaderboardData.map((item, index) => {
+        const medals = ['🥇', '🥈', '🥉'];
+        const medal = medals[index] || '📌';
+        const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : 'bronze';
+
+        return `
+          <div class="leaderboard-item">
+            <div class="leaderboard-rank ${rankClass}">${medal}</div>
+            <div class="leaderboard-info">
+              <div class="leaderboard-name">${item.name}</div>
+              <div class="leaderboard-streak">🔥 ${item.streak} day streak</div>
+            </div>
+            <div class="leaderboard-count">${item.total}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleHabitDay(habitId, dayIndex) {
+      const habit = habitsData.find(h => h.id === habitId);
+      habit.lastDays[dayIndex] = habit.lastDays[dayIndex] ? 0 : 1;
+      renderHabits();
+    }
+
+    function markHabitDone(habitId) {
+      const habit = habitsData.find(h => h.id === habitId);
+      const lastDay = habit.lastDays[habit.lastDays.length - 1];
+      if (!lastDay) {
+        habit.lastDays[habit.lastDays.length - 1] = 1;
+        habit.streak++;
+        renderHabits();
+        showNotification(`Great job! ${habit.emoji} ${habit.name} logged for today!`);
+
+        // Award XP for habit completion
+        addXP(10, `Completed habit: ${habit.name}`);
+
+        // Bonus XP for streaks
+        if (habit.streak === 7) {
+          addXP(100, '7-day streak! 🔥');
+        } else if (habit.streak === 14) {
+          addXP(200, '14-day streak! 🔥🔥');
+        } else if (habit.streak === 30) {
+          addXP(500, '30-day streak! 🏆');
+        }
+      }
+    }
+
+    function addNewHabit() {
+      alert('Add Habit feature coming soon!');
+    }
+
+    function showNotification(message) {
+      const notif = document.createElement('div');
+      notif.textContent = message;
+      notif.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--coral);
+        color: white;
+        padding: 16px 24px;
+        border-radius: 50px;
+        font-weight: 600;
+        z-index: 9999;
+        animation: slideInRight 0.3s ease;
+        box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
+      `;
+      document.body.appendChild(notif);
+      setTimeout(() => notif.remove(), 3000);
+    }
+
+    renderHeatmap();
+    renderHabits();
+    renderLeaderboard();
+  </script>
+</body>
+</html>

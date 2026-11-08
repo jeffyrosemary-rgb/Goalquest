@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoalQuest - Home</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="gamification.js"></script>
+  <style>
+    /* Interactive Goal Circle & Popup */
+    .goal-circle-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 28px;
+      animation: fadeInUp 0.6s ease 0.2s both;
+    }
+
+    .circular-progress {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      touch-action: pan-y;
+      user-select: none;
+      transition: transform 0.3s ease;
+    }
+
+    .circular-progress:hover {
+      transform: scale(1.05);
+    }
+
+    .circular-progress canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 4px 16px rgba(255, 107, 107, 0.2));
+    }
+
+    .circle-center-content {
+      position: absolute;
+      text-align: center;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .circle-percentage {
+      font-size: 48px;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--coral), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      animation: numberCountUp 1.2s ease-out;
+    }
+
+    .circle-label {
+      font-size: 13px;
+      color: var(--slate);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    /* Goal Stats Popup */
+    .goal-popup {
+      position: absolute;
+      background: white;
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      transform: scale(0.95);
+      white-space: nowrap;
+      min-width: 180px;
+      text-align: center;
+      border: 2px solid var(--coral);
+    }
+
+    .goal-popup.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateY(-10px);
+      animation: popupBounce 0.4s ease;
+    }
+
+    .popup-emoji {
+      font-size: 24px;
+      margin-bottom: 6px;
+      display: block;
+      animation: emojiSpin 0.6s ease;
+    }
+
+    .popup-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .popup-subtitle {
+      font-size: 13px;
+      color: var(--slate);
+    }
+
+    .popup-highlight {
+      font-weight: 800;
+      color: var(--coral);
+    }
+
+    .circle-hint {
+      font-size: 12px;
+      color: var(--slate);
+      text-align: center;
+      margin-top: 8px;
+      font-style: italic;
+      animation: fadeInUp 0.6s ease 0.4s both;
+    }
+
+    /* Collapsible Tabs */
+    .dashboard-tabs {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: fadeInUp 0.6s ease 0.3s both;
+    }
+
+    .tab-item {
+      background: white;
+      border-radius: 18px;
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .tab-item:hover {
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .tab-header {
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: var(--transition);
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text-primary);
+    }
+
+    .tab-header:hover {
+      background: var(--slate-light);
+    }
+
+    .tab-icon {
+      font-size: 20px;
+      margin-right: 12px;
+      transition: transform 0.3s ease;
+    }
+
+    .tab-title-wrapper {
+      display: flex;
+      align-items: center;
+      flex: 1;
+    }
+
+    .tab-chevron {
+      font-size: 18px;
+      transition: transform 0.3s ease;
+      color: var(--slate);
+    }
+
+    .tab-chevron.open {
+      transform: rotate(180deg);
+    }
+
+    .tab-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .tab-content.open {
+      max-height: 1000px;
+      transition: max-height 0.4s ease;
+    }
+
+    .tab-body {
+      padding: 0 24px 20px 24px;
+    }
+
+    .glance-card {
+      animation: cardSlideIn 0.4s ease backwards;
+    }
+
+    .glance-card:nth-child(1) { animation-delay: 0.1s; }
+    .glance-card:nth-child(2) { animation-delay: 0.15s; }
+    .glance-card:nth-child(3) { animation-delay: 0.2s; }
+    .glance-card:nth-child(4) { animation-delay: 0.25s; }
+    .glance-card:nth-child(5) { animation-delay: 0.3s; }
+    .glance-card:nth-child(6) { animation-delay: 0.35s; }
+
+    .goal-list-item {
+      animation: slideInLeft 0.4s ease backwards;
+    }
+
+    .goal-list-item:nth-child(1) { animation-delay: 0.1s; }
+    .goal-list-item:nth-child(2) { animation-delay: 0.15s; }
+    .goal-list-item:nth-child(3) { animation-delay: 0.2s; }
+
+    /* Custom Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes numberCountUp {
+      from { opacity: 0; transform: scale(0.5); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes popupBounce {
+      0% { transform: scale(0.9) translateY(0); }
+      50% { transform: scale(1.02) translateY(-5px); }
+      100% { transform: scale(1) translateY(-10px); }
+    }
+
+    @keyframes emojiSpin {
+      from { transform: rotate(-30deg) scale(0.5); }
+      to { transform: rotate(0) scale(1); }
+    }
+
+    @keyframes cardSlideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">🎯</div>
+        <div class="sidebar-logo-text">GoalQuest</div>
+      </div>
+
+      <nav>
+        <a href="index.html" class="nav-item active" style="text-decoration: none;">
+          <span class="nav-icon">🏠</span>
+          <span>Home</span>
+        </a>
+        <a href="goals.html" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">📋</span>
+          <span>Goals</span>
+        </a>
+        <a href="#" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">🔥</span>
+          <span>Habits</span>
+        </a>
+        <a href="#" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">📈</span>
+          <span>Progress</span>
+        </a>
+        <a href="#" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">⚙️</span>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="nav-item">
+          <span class="nav-icon">❓</span>
+          <span>Help</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">Welcome back, Champion!</h1>
+        <p class="page-subtitle">Here's your goal progress at a glance</p>
+      </div>
+
+      <!-- Dashboard Greeting -->
+      <div class="dashboard-greeting">
+        <h2 style="font-size: 28px; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, var(--coral), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+          Your Journey Today 🚀
+        </h2>
+        <p class="identity-message">"Every small step forward is still progress" — Keep pushing!</p>
+      </div>
+
+      <!-- Gamification Panel - XP & Level -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; animation: fadeInUp 0.6s ease;">
+        <!-- XP & Level Card -->
+        <div class="card" style="background: linear-gradient(135deg, rgba(220, 47, 2, 0.05), rgba(255, 71, 87, 0.05)); border: 2px solid rgba(220, 47, 2, 0.1); padding: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: var(--slate); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Level</div>
+              <div style="font-size: 28px; font-weight: 900; background: linear-gradient(135deg, var(--red), #FF4757); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;" id="levelDisplay">1</div>
+            </div>
+            <div style="font-size: 48px;" id="levelEmoji">✨</div>
+          </div>
+          <div style="font-size: 13px; color: var(--slate); margin-bottom: 8px;" id="levelTitle">Dreamer</div>
+          <div class="xp-bar">
+            <div class="xp-bar-fill" id="xpBarFill" style="width: 0%;"></div>
+          </div>
+          <div style="font-size: 11px; color: var(--slate); margin-top: 6px;">
+            <span id="xpNeeded">0</span> XP to next level
+          </div>
+        </div>
+
+        <!-- Daily Challenges Quick View -->
+        <div class="card" style="background: linear-gradient(135deg, rgba(78, 205, 196, 0.05), rgba(0, 212, 170, 0.05)); border: 2px solid rgba(78, 205, 196, 0.1); padding: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: var(--slate); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Daily Challenges</div>
+              <div style="font-size: 22px; font-weight: 900; color: var(--text-primary);" id="challengeProgress">0/5</div>
+            </div>
+            <div style="font-size: 48px;">🎯</div>
+          </div>
+          <div style="display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap;" id="challengeIndicators">
+            <!-- Indicators generated by JS -->
+          </div>
+          <div style="font-size: 11px; color: var(--slate); margin-top: 8px;">
+            <span id="dailyReward">0</span> XP today
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Goal Circle -->
+      <div class="goal-circle-container">
+        <div style="position: relative; display: inline-block;">
+          <div class="circular-progress" id="goalCircle">
+            <canvas id="goalCanvas"></canvas>
+            <div class="circle-center-content">
+              <div class="circle-percentage" id="percentage">67%</div>
+              <div class="circle-label">Complete</div>
+            </div>
+          </div>
+          <div class="goal-popup" id="goalPopup">
+            <span class="popup-emoji">🎉</span>
+            <div class="popup-title">Goals Achieved</div>
+            <div class="popup-subtitle"><span class="popup-highlight" id="popupCount">4</span> out of <span id="popupTotal">6</span></div>
+          </div>
+        </div>
+        <p class="circle-hint">↔️ Swipe or drag to interact</p>
+      </div>
+
+
+      <!-- Just One Thing Card - Enhanced -->
+      <div class="card" style="background: linear-gradient(135deg, #FF6B6B, #FF8E53); border-radius: 24px; padding: 32px; margin-bottom: 28px; box-shadow: 0 12px 40px rgba(255,107,107,0.3);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;">
+          <div style="flex: 1;">
+            <div style="display: inline-block; background: rgba(255,255,255,0.25); padding: 8px 16px; border-radius: 50px; margin-bottom: 14px;">
+              <span style="color: white; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">⭐ Focus for Today</span>
+            </div>
+            <h3 style="color: white; font-size: 24px; font-weight: 900; margin-bottom: 12px; line-height: 1.3;">Complete Project Demo</h3>
+            <p style="color: rgba(255,255,255,0.85); font-size: 14px; margin-bottom: 16px; line-height: 1.6;">This is your priority task. Make it count!</p>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <span style="background: rgba(255,255,255,0.2); color: white; padding: 6px 14px; border-radius: 50px; font-size: 13px; font-weight: 600;">⏰ 3 days left</span>
+              <span style="background: rgba(255,255,255,0.2); color: white; padding: 6px 14px; border-radius: 50px; font-size: 13px; font-weight: 600;">🔥 High Priority</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+            <button style="background: white; color: #FF6B6B; border: none; padding: 14px 28px; border-radius: 50px; font-weight: 700; font-size: 15px; cursor: pointer; transition: var(--transition); box-shadow: 0 4px 16px rgba(0,0,0,0.15);">Start Now</button>
+            <span style="color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600;">65% done</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Collapsible Tabs Section -->
+      <div class="dashboard-tabs">
+        <!-- Active Goals Tab -->
+        <div class="tab-item">
+          <div class="tab-header" onclick="toggleTab(this)">
+            <div class="tab-title-wrapper">
+              <span class="tab-icon">🎯</span>
+              <span>Active Goals</span>
+            </div>
+            <span class="tab-chevron">▼</span>
+          </div>
+          <div class="tab-content open">
+            <div class="tab-body">
+              <div class="glance-row">
+                <div class="glance-card">
+                  <div class="glance-card-emoji">💪</div>
+                  <div class="glance-card-title">Fitness Challenge</div>
+                </div>
+                <div class="glance-card">
+                  <div class="glance-card-emoji">📚</div>
+                  <div class="glance-card-title">Read 12 Books</div>
+                </div>
+                <div class="glance-card">
+                  <div class="glance-card-emoji">🎨</div>
+                  <div class="glance-card-title">Learn Design</div>
+                </div>
+                <div class="glance-card">
+                  <div class="glance-card-emoji">🏢</div>
+                  <div class="glance-card-title">Career Growth</div>
+                </div>
+                <div class="glance-card">
+                  <div class="glance-card-emoji">✈️</div>
+                  <div class="glance-card-title">Travel Plans</div>
+                </div>
+                <div class="glance-card">
+                  <div class="glance-card-emoji">💰</div>
+                  <div class="glance-card-title">Save Money</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity Tab -->
+        <div class="tab-item">
+          <div class="tab-header" onclick="toggleTab(this)">
+            <div class="tab-title-wrapper">
+              <span class="tab-icon">📋</span>
+              <span>Recent Activity</span>
+            </div>
+            <span class="tab-chevron">▼</span>
+          </div>
+          <div class="tab-content">
+            <div class="tab-body">
+              <div class="goals-list">
+                <div class="goal-list-item">
+                  <div class="goal-list-emoji">✅</div>
+                  <div class="goal-list-info">
+                    <div class="goal-list-title">Completed morning workout</div>
+                    <div class="goal-list-meta">
+                      <span>Today at 6:30 AM</span>
+                      <span class="priority-badge high">High</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="goal-list-item">
+                  <div class="goal-list-emoji">📖</div>
+                  <div class="goal-list-info">
+                    <div class="goal-list-title">Read Chapter 5 of "Atomic Habits"</div>
+                    <div class="goal-list-meta">
+                      <span>2 hours ago</span>
+                      <span class="priority-badge medium">Medium</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="goal-list-item">
+                  <div class="goal-list-emoji">🎨</div>
+                  <div class="goal-list-info">
+                    <div class="goal-list-title">Completed UI design mockup</div>
+                    <div class="goal-list-meta">
+                      <span>Yesterday</span>
+                      <span class="priority-badge high">High</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Motivation Tab -->
+        <div class="tab-item">
+          <div class="tab-header" onclick="toggleTab(this)">
+            <div class="tab-title-wrapper">
+              <span class="tab-icon">🔥</span>
+              <span>Keep the Momentum</span>
+            </div>
+            <span class="tab-chevron">▼</span>
+          </div>
+          <div class="tab-content">
+            <div class="tab-body">
+              <div style="background: linear-gradient(135deg, var(--lime-light), var(--teal-light)); border: 1px solid rgba(168,224,99,0.3); padding: 24px; border-radius: 18px; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 12px;">🔥</div>
+                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">You're on a 7-day streak!</h3>
+                <p style="color: var(--slate); margin-bottom: 16px; line-height: 1.6;">
+                  Amazing progress! Keep checking off your goals to maintain your momentum.
+                </p>
+                <button class="btn btn-primary">View Streaks →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Padding -->
+      <div style="height: 40px;"></div>
+    </main>
+  </div>
+
+  <!-- Floating Action Button -->
+  <button class="fab" title="Add a new goal" onclick="window.location.href='goal-wizard.html'">➕</button>
+
+  <script>
+    // ========================================
+    // Interactive Circular Goal Progress
+    // ========================================
+
+    const canvas = document.getElementById('goalCanvas');
+    const ctx = canvas.getContext('2d');
+    const circle = document.getElementById('goalCircle');
+    const popup = document.getElementById('goalPopup');
+    const percentageEl = document.getElementById('percentage');
+    const popupCountEl = document.getElementById('popupCount');
+    const popupTotalEl = document.getElementById('popupTotal');
+
+    // Goal data
+    const goalsAchieved = 4;
+    const totalGoals = 6;
+    const completionPercentage = Math.round((goalsAchieved / totalGoals) * 100);
+
+    // Set canvas size for high DPI
+    const dpr = window.devicePixelRatio || 1;
+    const size = 240;
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
+    ctx.scale(dpr, dpr);
+
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    function drawCircle(hoverAngle = null) {
+      const centerX = size / 2;
+      const centerY = size / 2;
+      const radius = 90;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, size, size);
+
+      // Draw background circle (unfilled portion)
+      ctx.fillStyle = '#F1F5F9';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw progress solid pie
+      const progress = completionPercentage / 100;
+      const gradient = ctx.createLinearGradient(
+        centerX - radius, centerY,
+        centerX + radius, centerY
+      );
+      gradient.addColorStop(0, '#FF6B6B');
+      gradient.addColorStop(0.5, '#A855F7');
+      gradient.addColorStop(1, '#4ECDC4');
+
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(
+        centerX, centerY, radius,
+        -Math.PI / 2,
+        -Math.PI / 2 + (Math.PI * 2 * progress),
+        false
+      );
+      ctx.lineTo(centerX, centerY);
+      ctx.fill();
+
+      // If hovering, highlight and show indicator
+      if (hoverAngle !== null) {
+        // Draw hover highlight
+        ctx.fillStyle = 'rgba(255, 107, 107, 0.15)';
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(
+          centerX, centerY, radius,
+          hoverAngle - 0.12,
+          hoverAngle + 0.12,
+          false
+        );
+        ctx.lineTo(centerX, centerY);
+        ctx.fill();
+
+        // Draw indicator dot on circle edge
+        const dotX = centerX + Math.cos(hoverAngle) * radius;
+        const dotY = centerY + Math.sin(hoverAngle) * radius;
+        ctx.fillStyle = '#FF6B6B';
+        ctx.beginPath();
+        ctx.arc(dotX, dotY, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function getAngleFromPoint(x, y) {
+      const rect = canvas.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const dx = x - centerX;
+      const dy = y - centerY;
+      return Math.atan2(dy, dx);
+    }
+
+    function showPopup(x, y) {
+      const rect = circle.getBoundingClientRect();
+      popupCountEl.textContent = goalsAchieved;
+      popupTotalEl.textContent = totalGoals;
+
+      // Position popup near cursor
+      let popupX = x - rect.left;
+      let popupY = y - rect.top - 80;
+
+      // Adjust if popup goes off screen
+      const popupRect = popup.getBoundingClientRect();
+      if (popupX + popupRect.width > rect.right) {
+        popupX = rect.width - popupRect.width - 20;
+      }
+      if (popupX < 0) popupX = 20;
+
+      popup.style.left = popupX + 'px';
+      popup.style.top = popupY + 'px';
+      popup.classList.add('active');
+
+      // Auto-hide after 2 seconds
+      setTimeout(() => {
+        popup.classList.remove('active');
+      }, 2000);
+    }
+
+    // Mouse events
+    circle.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        const angle = getAngleFromPoint(e.clientX, e.clientY);
+        drawCircle(angle);
+      }
+    });
+
+    document.addEventListener('mouseup', (e) => {
+      if (isDragging) {
+        isDragging = false;
+        showPopup(e.clientX, e.clientY);
+        drawCircle();
+      }
+    });
+
+    // Touch events
+    circle.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    });
+
+    document.addEventListener('touchmove', (e) => {
+      if (isDragging) {
+        const angle = getAngleFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+        drawCircle(angle);
+      }
+    });
+
+    document.addEventListener('touchend', (e) => {
+      if (isDragging) {
+        isDragging = false;
+        if (e.changedTouches.length > 0) {
+          showPopup(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        }
+        drawCircle();
+      }
+    });
+
+    // Click to show popup
+    circle.addEventListener('click', (e) => {
+      showPopup(e.clientX, e.clientY);
+    });
+
+    // Initial draw
+    drawCircle();
+
+    // ========================================
+    // Gamification Display
+    // ========================================
+    function updateGamificationDisplay() {
+      const progress = getXPProgress();
+
+      // Update level display
+      document.getElementById('levelDisplay').textContent = progress.currentLevel.level;
+      document.getElementById('levelEmoji').textContent = progress.currentLevel.emoji;
+      document.getElementById('levelTitle').textContent = progress.currentLevel.title;
+      document.getElementById('xpNeeded').textContent = progress.xpNeeded.toLocaleString();
+      document.getElementById('xpBarFill').style.width = progress.progress + '%';
+
+      // Update daily challenges
+      const challenges = getDailyChallenges();
+      const completed = challenges.filter(c => c.completed).length;
+      document.getElementById('challengeProgress').textContent = `${completed}/${challenges.length}`;
+      document.getElementById('dailyReward').textContent = getDailyReward();
+
+      // Challenge indicators
+      const indicators = document.getElementById('challengeIndicators');
+      indicators.innerHTML = challenges.map(c => `
+        <div style="width: 20px; height: 20px; border-radius: 50%; background: ${c.completed ? 'linear-gradient(135deg, var(--red), #FF4757)' : '#E5E7EB'}; transition: var(--transition); cursor: pointer;"
+             title="${c.name}"
+             onclick="completeChallenge(${c.id}); updateGamificationDisplay();">
+        </div>
+      `).join('');
+    }
+
+    // ========================================
+    // Collapsible Tabs
+    // ========================================
+    function toggleTab(headerElement) {
+      const tabItem = headerElement.parentElement;
+      const content = tabItem.querySelector('.tab-content');
+      const chevron = headerElement.querySelector('.tab-chevron');
+
+      // Close other open tabs (optional - remove this if you want multiple open)
+      const allTabs = document.querySelectorAll('.tab-item');
+      allTabs.forEach(tab => {
+        if (tab !== tabItem) {
+          tab.querySelector('.tab-content').classList.remove('open');
+          tab.querySelector('.tab-chevron').classList.remove('open');
+        }
+      });
+
+      // Toggle current tab
+      content.classList.toggle('open');
+      chevron.classList.toggle('open');
+    }
+
+    // Initialize gamification display on page load
+    updateGamificationDisplay();
+  </script>
+</body>
+</html>

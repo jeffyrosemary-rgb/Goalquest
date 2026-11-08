@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoalQuest - Goals</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="gamification.js"></script>
+  <style>
+    /* Goals Page Specific */
+    .goals-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+      flex-wrap: wrap;
+      animation: fadeInDown 0.5s ease;
+    }
+
+    .search-bar {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 18px 12px 44px;
+      border: 2px solid #E5E7EB;
+      border-radius: 50px;
+      font-family: var(--font);
+      font-size: 15px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .search-input:focus {
+      border-color: var(--coral);
+      box-shadow: 0 0 0 4px rgba(255,107,107,0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      color: var(--slate);
+      pointer-events: none;
+    }
+
+    .filter-controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .filter-dropdown {
+      padding: 10px 16px;
+      border: 2px solid #E5E7EB;
+      border-radius: 50px;
+      background: white;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate);
+      cursor: pointer;
+      transition: var(--transition);
+      outline: none;
+    }
+
+    .filter-dropdown:hover, .filter-dropdown:focus {
+      border-color: var(--coral);
+      color: var(--coral);
+    }
+
+    .filter-chip {
+      padding: 8px 16px;
+      border-radius: 50px;
+      border: 2px solid #E5E7EB;
+      background: white;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--slate);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .filter-chip:hover, .filter-chip.active {
+      border-color: var(--coral);
+      color: var(--coral);
+      background: var(--coral-light);
+    }
+
+    .goals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+      animation: fadeInUp 0.6s ease;
+    }
+
+    .goal-card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .goal-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .goal-card-header {
+      padding: 20px;
+      background: linear-gradient(135deg, var(--coral-light), var(--purple-light));
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .goal-card-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .goal-card-emoji {
+      font-size: 28px;
+      margin-top: 8px;
+    }
+
+    .goal-card-body {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .goal-progress-section {
+      margin-bottom: 16px;
+    }
+
+    .goal-progress-label {
+      font-size: 12px;
+      color: var(--slate);
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .goal-progress-bar {
+      height: 6px;
+      background: var(--slate-light);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .goal-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--coral), var(--purple));
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .goal-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .goal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .goal-badge.high {
+      background: var(--coral-light);
+      color: var(--coral);
+    }
+
+    .goal-badge.medium {
+      background: var(--amber-light);
+      color: #B45309;
+    }
+
+    .goal-badge.low {
+      background: var(--lime-light);
+      color: #4A7C1F;
+    }
+
+    .goal-badge.category {
+      background: var(--sky-light);
+      color: var(--sky);
+    }
+
+    .goal-description {
+      font-size: 13px;
+      color: var(--slate);
+      margin-bottom: 16px;
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .goal-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #F1F5F9;
+      padding-top: 12px;
+    }
+
+    .goal-deadline {
+      font-size: 12px;
+      color: var(--slate);
+      font-weight: 500;
+    }
+
+    .goal-action-btn {
+      background: var(--coral);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .goal-action-btn:hover {
+      background: var(--coral-dark);
+      transform: scale(1.05);
+    }
+
+    .empty-state-section {
+      text-align: center;
+      padding: 60px 20px;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .empty-state-emoji {
+      font-size: 64px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .empty-state-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .empty-state-text {
+      font-size: 15px;
+      color: var(--slate);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">🎯</div>
+        <div class="sidebar-logo-text">GoalQuest</div>
+      </div>
+
+      <nav>
+        <a href="index.html" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">🏠</span>
+          <span>Home</span>
+        </a>
+        <a href="goals.html" class="nav-item active" style="text-decoration: none;">
+          <span class="nav-icon">📋</span>
+          <span>Goals</span>
+        </a>
+        <a href="#" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">🔥</span>
+          <span>Habits</span>
+        </a>
+        <a href="#" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">📈</span>
+          <span>Progress</span>
+        </a>
+        <a href="#" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">⚙️</span>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="#" class="nav-item" style="text-decoration: none;">
+          <span class="nav-icon">❓</span>
+          <span>Help</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">Your Goals</h1>
+        <p class="page-subtitle">Track and manage all your goals</p>
+      </div>
+
+      <!-- Search & Filter -->
+      <div class="goals-header">
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            class="search-input"
+            id="searchInput"
+            placeholder="Search goals..."
+            onkeyup="filterGoals()"
+          >
+        </div>
+        <div class="filter-controls">
+          <select class="filter-dropdown" id="statusFilter" onchange="filterGoals()">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+            <option value="on-hold">On Hold</option>
+          </select>
+          <select class="filter-dropdown" id="priorityFilter" onchange="filterGoals()">
+            <option value="">All Priority</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <select class="filter-dropdown" id="categoryFilter" onchange="filterGoals()">
+            <option value="">All Categories</option>
+            <option value="fitness">Fitness</option>
+            <option value="learning">Learning</option>
+            <option value="career">Career</option>
+            <option value="travel">Travel</option>
+            <option value="finance">Finance</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Goals Grid -->
+      <div class="goals-grid" id="goalsGrid">
+        <!-- Goals will be inserted here by JavaScript -->
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state-section" id="emptyState" style="display: none;">
+        <span class="empty-state-emoji">🎯</span>
+        <h3 class="empty-state-title">No goals found</h3>
+        <p class="empty-state-text">Try adjusting your filters or create a new goal to get started.</p>
+      </div>
+
+      <div style="height: 40px;"></div>
+    </main>
+  </div>
+
+  <!-- Floating Action Button -->
+  <button class="fab" title="Add a new goal" onclick="window.location.href='goal-wizard.html'">➕</button>
+
+  <script>
+    // Sample goals data
+    const goalsData = [
+      {
+        id: 1,
+        title: "Complete Project Demo",
+        emoji: "💼",
+        description: "Finish and present the project demo to stakeholders",
+        category: "career",
+        priority: "high",
+        status: "active",
+        progress: 65,
+        deadline: "Dec 15, 2024",
+        color: "#FF6B6B"
+      },
+      {
+        id: 2,
+        title: "Fitness Challenge",
+        emoji: "💪",
+        description: "Exercise 5 times a week for 3 months",
+        category: "fitness",
+        priority: "high",
+        status: "active",
+        progress: 40,
+        deadline: "Mar 31, 2025",
+        color: "#FF8E53"
+      },
+      {
+        id: 3,
+        title: "Read 12 Books",
+        emoji: "📚",
+        description: "Read one book per month this year",
+        category: "learning",
+        priority: "medium",
+        status: "active",
+        progress: 25,
+        deadline: "Dec 31, 2024",
+        color: "#A8E063"
+      },
+      {
+        id: 4,
+        title: "Learn Design",
+        emoji: "🎨",
+        description: "Complete UI/UX design course",
+        category: "learning",
+        priority: "medium",
+        status: "active",
+        progress: 55,
+        deadline: "Jan 31, 2025",
+        color: "#4ECDC4"
+      },
+      {
+        id: 5,
+        title: "Career Growth",
+        emoji: "🏢",
+        description: "Get promoted and lead a project",
+        category: "career",
+        priority: "high",
+        status: "active",
+        progress: 35,
+        deadline: "Dec 31, 2025",
+        color: "#A855F7"
+      },
+      {
+        id: 6,
+        title: "Travel Plans",
+        emoji: "✈️",
+        description: "Visit 3 new countries this year",
+        category: "travel",
+        priority: "low",
+        status: "active",
+        progress: 15,
+        deadline: "Dec 31, 2024",
+        color: "#2DD4BF"
+      },
+      {
+        id: 7,
+        title: "Save Money",
+        emoji: "💰",
+        description: "Save $10,000 by year end",
+        category: "finance",
+        priority: "high",
+        status: "active",
+        progress: 70,
+        deadline: "Dec 31, 2024",
+        color: "#FFC107"
+      },
+      {
+        id: 8,
+        title: "Morning Runs",
+        emoji: "🏃",
+        description: "Run every morning for 30 days",
+        category: "fitness",
+        priority: "medium",
+        status: "completed",
+        progress: 100,
+        deadline: "Completed",
+        color: "#4ECDC4"
+      }
+    ];
+
+    function renderGoals(goals) {
+      const grid = document.getElementById('goalsGrid');
+      const emptyState = document.getElementById('emptyState');
+
+      if (goals.length === 0) {
+        grid.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      grid.style.display = 'grid';
+      emptyState.style.display = 'none';
+
+      grid.innerHTML = goals.map((goal, index) => `
+        <div class="goal-card" onclick="window.location.href='goal-detail.html?id=${goal.id}'" style="animation: cardSlideIn 0.4s ease ${index * 0.05}s backwards;">
+          <div class="goal-card-header" style="background: linear-gradient(135deg, ${goal.color}22, ${goal.color}11);">
+            <div>
+              <div class="goal-card-title">${goal.title}</div>
+              <div class="goal-card-emoji">${goal.emoji}</div>
+            </div>
+          </div>
+          <div class="goal-card-body">
+            <div class="goal-meta">
+              <span class="goal-badge ${goal.priority}">${goal.priority.charAt(0).toUpperCase() + goal.priority.slice(1)} Priority</span>
+              <span class="goal-badge category">${goal.category.charAt(0).toUpperCase() + goal.category.slice(1)}</span>
+            </div>
+            <div class="goal-description">${goal.description}</div>
+            <div class="goal-progress-section">
+              <div class="goal-progress-label">
+                <span>Progress</span>
+                <span style="font-weight: 700; color: var(--text-primary);">${goal.progress}%</span>
+              </div>
+              <div class="goal-progress-bar">
+                <div class="goal-progress-fill" style="width: ${goal.progress}%;"></div>
+              </div>
+            </div>
+            <div class="goal-footer">
+              <span class="goal-deadline">${goal.deadline}</span>
+              <button class="goal-action-btn" onclick="event.stopPropagation();">View</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterGoals() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+      const priorityFilter = document.getElementById('priorityFilter').value;
+      const categoryFilter = document.getElementById('categoryFilter').value;
+
+      const filtered = goalsData.filter(goal => {
+        const matchSearch = goal.title.toLowerCase().includes(searchTerm) ||
+                          goal.description.toLowerCase().includes(searchTerm);
+        const matchStatus = !statusFilter || goal.status === statusFilter;
+        const matchPriority = !priorityFilter || goal.priority === priorityFilter;
+        const matchCategory = !categoryFilter || goal.category === categoryFilter;
+
+        return matchSearch && matchStatus && matchPriority && matchCategory;
+      });
+
+      renderGoals(filtered);
+    }
+
+    // Initial render
+    renderGoals(goalsData);
+  </script>
+</body>
+</html>

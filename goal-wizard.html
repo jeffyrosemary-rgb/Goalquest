@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoalQuest - Create Goal</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="gamification.js"></script>
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .wizard-wrapper {
+      width: 100%;
+      max-width: 700px;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .wizard-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .wizard-logo {
+      font-size: 48px;
+      margin-bottom: 16px;
+      display: block;
+      animation: bounce 0.6s ease;
+    }
+
+    .wizard-title {
+      font-size: 28px;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--coral), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .wizard-subtitle {
+      font-size: 15px;
+      color: var(--slate);
+      line-height: 1.6;
+    }
+
+    /* Step indicator */
+    .step-indicator {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+      justify-content: center;
+    }
+
+    .step-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #E5E7EB;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .step-dot.active {
+      background: var(--coral);
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    .step-dot.done {
+      background: var(--lime);
+    }
+
+    /* Steps */
+    .wizard-step {
+      display: none;
+      animation: fadeInUp 0.4s ease;
+    }
+
+    .wizard-step.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text-primary);
+    }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      padding: 13px 18px;
+      border: 2px solid #E5E7EB;
+      border-radius: 14px;
+      font-family: var(--font);
+      font-size: 15px;
+      color: var(--text-primary);
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      border-color: var(--coral);
+      box-shadow: 0 0 0 4px rgba(255,107,107,0.1);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+      line-height: 1.6;
+    }
+
+    /* Emoji Selector */
+    .emoji-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .emoji-btn {
+      padding: 14px;
+      border: 2px solid #E5E7EB;
+      border-radius: 14px;
+      background: white;
+      cursor: pointer;
+      font-size: 24px;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .emoji-btn:hover {
+      border-color: var(--coral);
+      transform: scale(1.1);
+    }
+
+    .emoji-btn.selected {
+      background: var(--coral-light);
+      border-color: var(--coral);
+    }
+
+    /* Template Cards */
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .template-card {
+      border: 2px solid #E5E7EB;
+      border-radius: 14px;
+      padding: 16px;
+      cursor: pointer;
+      transition: var(--transition);
+      background: white;
+    }
+
+    .template-card:hover, .template-card.selected {
+      border-color: var(--coral);
+      background: var(--coral-light);
+      transform: translateY(-2px);
+    }
+
+    .template-emoji {
+      font-size: 24px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .template-name {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .template-category {
+      font-size: 11px;
+      color: var(--slate);
+      font-weight: 500;
+    }
+
+    /* Priority selector */
+    .priority-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .priority-btn {
+      padding: 14px 12px;
+      border: 2px solid #E5E7EB;
+      border-radius: 14px;
+      background: white;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: var(--transition);
+      text-align: center;
+    }
+
+    .priority-btn.high {
+      color: var(--coral);
+    }
+
+    .priority-btn.high.selected {
+      background: var(--coral-light);
+      border-color: var(--coral);
+    }
+
+    .priority-btn.medium {
+      color: #B45309;
+    }
+
+    .priority-btn.medium.selected {
+      background: var(--amber-light);
+      border-color: #B45309;
+    }
+
+    .priority-btn.low {
+      color: #4A7C1F;
+    }
+
+    .priority-btn.low.selected {
+      background: var(--lime-light);
+      border-color: #4A7C1F;
+    }
+
+    /* Milestone list */
+    .milestone-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .milestone-input-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .milestone-input-row input {
+      flex: 1;
+      padding: 11px 14px;
+      border: 2px solid #E5E7EB;
+      border-radius: 12px;
+      font-family: var(--font);
+      font-size: 14px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .milestone-input-row input:focus {
+      border-color: var(--coral);
+    }
+
+    .milestone-remove-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--slate);
+      padding: 4px 8px;
+      transition: var(--transition);
+    }
+
+    .milestone-remove-btn:hover {
+      color: var(--coral);
+    }
+
+    .add-milestone-btn {
+      padding: 11px 16px;
+      background: var(--slate-light);
+      border: 2px solid #E5E7EB;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--slate);
+      transition: var(--transition);
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .add-milestone-btn:hover {
+      border-color: var(--coral);
+      color: var(--coral);
+      background: var(--coral-light);
+    }
+
+    /* Summary */
+    .summary-card {
+      background: var(--slate-light);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 13px;
+    }
+
+    .summary-item-label {
+      color: var(--slate);
+      font-weight: 500;
+    }
+
+    .summary-item-value {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    /* Navigation */
+    .wizard-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .wizard-btn {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 50px;
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .wizard-btn.prev {
+      background: var(--slate-light);
+      color: var(--slate);
+    }
+
+    .wizard-btn.prev:hover {
+      background: #E2E8F0;
+      transform: translateX(-2px);
+    }
+
+    .wizard-btn.next, .wizard-btn.create {
+      background: linear-gradient(135deg, var(--coral), #FF8E53);
+      color: white;
+      box-shadow: 0 4px 16px rgba(255,107,107,0.3);
+    }
+
+    .wizard-btn.next:hover, .wizard-btn.create:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,107,107,0.4);
+    }
+
+    .wizard-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wizard-wrapper">
+    <!-- Header -->
+    <div class="wizard-header">
+      <span class="wizard-logo">🎯</span>
+      <h1 class="wizard-title">Create Your Goal</h1>
+      <p class="wizard-subtitle">Let's break down your big dreams into achievable goals</p>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+      <div class="step-dot active" onclick="goToStep(0)"></div>
+      <div class="step-dot" onclick="goToStep(1)"></div>
+      <div class="step-dot" onclick="goToStep(2)"></div>
+      <div class="step-dot" onclick="goToStep(3)"></div>
+      <div class="step-dot" onclick="goToStep(4)"></div>
+    </div>
+
+    <!-- Step 1: Template & Emoji -->
+    <div class="wizard-step active">
+      <div class="form-group">
+        <label class="form-label">Choose a template or start from scratch</label>
+        <div class="template-grid">
+          <div class="template-card selected" onclick="selectTemplate(this, 'fitness', '💪')">
+            <span class="template-emoji">💪</span>
+            <div class="template-name">Fitness</div>
+            <div class="template-category">Health & Exercise</div>
+          </div>
+          <div class="template-card" onclick="selectTemplate(this, 'learning', '📚')">
+            <span class="template-emoji">📚</span>
+            <div class="template-name">Learning</div>
+            <div class="template-category">Education</div>
+          </div>
+          <div class="template-card" onclick="selectTemplate(this, 'career', '🏢')">
+            <span class="template-emoji">🏢</span>
+            <div class="template-name">Career</div>
+            <div class="template-category">Professional</div>
+          </div>
+          <div class="template-card" onclick="selectTemplate(this, 'travel', '✈️')">
+            <span class="template-emoji">✈️</span>
+            <div class="template-name">Travel</div>
+            <div class="template-category">Adventure</div>
+          </div>
+          <div class="template-card" onclick="selectTemplate(this, 'finance', '💰')">
+            <span class="template-emoji">💰</span>
+            <div class="template-name">Finance</div>
+            <div class="template-category">Money</div>
+          </div>
+          <div class="template-card" onclick="selectTemplate(this, 'custom', '✨')">
+            <span class="template-emoji">✨</span>
+            <div class="template-name">Custom</div>
+            <div class="template-category">Your idea</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Choose an emoji for your goal</label>
+        <div class="emoji-grid">
+          <div class="emoji-btn selected" onclick="selectEmoji(this, '💪')">💪</div>
+          <div class="emoji-btn" onclick="selectEmoji(this, '🏃')">🏃</div>
+          <div class="emoji-btn" onclick="selectEmoji(this, '🎨')">🎨</div>
+          <div class="emoji-btn" onclick="selectEmoji(this, '📚')">📚</div>
+          <div class="emoji-btn" onclick="selectEmoji(this, '🚀')">🚀</div>
+          <div class="emoji-btn" onclick="selectEmoji(this, '🏆')">🏆</div>
+          <div class="emoji-btn" onclick="selectEmoji(this, '💡')">💡</div>
+          <div class="emoji-btn" onclick="selectEmoji(this, '🎯')">🎯</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Goal Details -->
+    <div class="wizard-step">
+      <div class="form-group">
+        <label class="form-label">What's your goal?</label>
+        <input type="text" class="form-input" id="goalTitle" placeholder="e.g., Run a Marathon">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tell us more about it</label>
+        <textarea class="form-textarea" id="goalDescription" placeholder="Why is this goal important to you?"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-select" id="goalCategory">
+          <option value="fitness">Fitness</option>
+          <option value="learning">Learning</option>
+          <option value="career">Career</option>
+          <option value="travel">Travel</option>
+          <option value="finance">Finance</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Step 3: Priority & Deadline -->
+    <div class="wizard-step">
+      <div class="form-group">
+        <label class="form-label">How important is this goal?</label>
+        <div class="priority-options">
+          <button class="priority-btn high selected" onclick="selectPriority(this, 'high')">🔥 High</button>
+          <button class="priority-btn medium" onclick="selectPriority(this, 'medium')">⚡ Medium</button>
+          <button class="priority-btn low" onclick="selectPriority(this, 'low')">📌 Low</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Deadline</label>
+        <input type="date" class="form-input" id="goalDeadline">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Target number (optional)</label>
+        <input type="number" class="form-input" id="goalTarget" placeholder="e.g., 10 (for 10 km run)">
+      </div>
+    </div>
+
+    <!-- Step 4: Milestones -->
+    <div class="wizard-step">
+      <div class="form-group">
+        <label class="form-label">Add milestones to track progress</label>
+        <div class="milestone-list" id="milestoneList">
+          <div class="milestone-input-row">
+            <input type="text" placeholder="First milestone" value="Get started">
+            <button class="milestone-remove-btn" onclick="removeMilestone(this)">×</button>
+          </div>
+          <div class="milestone-input-row">
+            <input type="text" placeholder="Next milestone" value="Mid-way checkpoint">
+            <button class="milestone-remove-btn" onclick="removeMilestone(this)">×</button>
+          </div>
+        </div>
+        <button class="add-milestone-btn" onclick="addMilestone()">+ Add Milestone</button>
+      </div>
+    </div>
+
+    <!-- Step 5: Review & Create -->
+    <div class="wizard-step">
+      <div class="form-group">
+        <label class="form-label">Review your goal</label>
+        <div class="summary-card">
+          <div class="summary-item">
+            <span class="summary-item-label">Goal</span>
+            <span class="summary-item-value" id="summaryTitle">-</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-item-label">Category</span>
+            <span class="summary-item-value" id="summaryCategory">-</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-item-label">Priority</span>
+            <span class="summary-item-value" id="summaryPriority">-</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-item-label">Deadline</span>
+            <span class="summary-item-value" id="summaryDeadline">-</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-item-label">Milestones</span>
+            <span class="summary-item-value" id="summaryMilestones">0</span>
+          </div>
+        </div>
+      </div>
+
+      <p style="text-align: center; color: var(--slate); font-size: 14px;">
+        You're all set! Click "Create Goal" to start your journey.
+      </p>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="wizard-nav">
+      <button class="wizard-btn prev" onclick="previousStep()" id="prevBtn" style="display: none;">← Previous</button>
+      <button class="wizard-btn next" onclick="nextStep()" id="nextBtn">Next →</button>
+      <button class="wizard-btn create" onclick="createGoal()" id="createBtn" style="display: none;">Create Goal 🎉</button>
+    </div>
+  </div>
+
+  <script>
+    let currentStep = 0;
+    let goalData = {
+      emoji: '💪',
+      title: '',
+      description: '',
+      category: 'fitness',
+      priority: 'high',
+      deadline: '',
+      target: '',
+      milestones: []
+    };
+
+    function goToStep(step) {
+      if (step < currentStep) {
+        currentStep = step;
+        updateStep();
+      }
+    }
+
+    function nextStep() {
+      if (currentStep < 4) {
+        currentStep++;
+        updateStep();
+      }
+    }
+
+    function previousStep() {
+      if (currentStep > 0) {
+        currentStep--;
+        updateStep();
+      }
+    }
+
+    function updateStep() {
+      // Update visible step
+      document.querySelectorAll('.wizard-step').forEach((step, i) => {
+        step.classList.toggle('active', i === currentStep);
+      });
+
+      // Update step dots
+      document.querySelectorAll('.step-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentStep);
+        dot.classList.toggle('done', i < currentStep);
+      });
+
+      // Update buttons
+      document.getElementById('prevBtn').style.display = currentStep === 0 ? 'none' : 'block';
+      document.getElementById('nextBtn').style.display = currentStep === 4 ? 'none' : 'block';
+      document.getElementById('createBtn').style.display = currentStep === 4 ? 'block' : 'none';
+
+      // Update summary when on last step
+      if (currentStep === 4) {
+        updateSummary();
+      }
+    }
+
+    function selectTemplate(element, template, emoji) {
+      document.querySelectorAll('.template-card').forEach(card => card.classList.remove('selected'));
+      element.classList.add('selected');
+      goalData.category = template;
+      if (emoji) selectEmojiValue(emoji);
+    }
+
+    function selectEmoji(element, emoji) {
+      document.querySelectorAll('.emoji-btn').forEach(btn => btn.classList.remove('selected'));
+      element.classList.add('selected');
+      selectEmojiValue(emoji);
+    }
+
+    function selectEmojiValue(emoji) {
+      goalData.emoji = emoji;
+    }
+
+    function selectPriority(element, priority) {
+      document.querySelectorAll('.priority-btn').forEach(btn => btn.classList.remove('selected'));
+      element.classList.add('selected');
+      goalData.priority = priority;
+    }
+
+    function addMilestone() {
+      const list = document.getElementById('milestoneList');
+      const row = document.createElement('div');
+      row.className = 'milestone-input-row';
+      row.innerHTML = `
+        <input type="text" placeholder="New milestone">
+        <button class="milestone-remove-btn" onclick="removeMilestone(this)">×</button>
+      `;
+      list.insertBefore(row, list.lastElementChild);
+    }
+
+    function removeMilestone(btn) {
+      btn.parentElement.remove();
+    }
+
+    function updateSummary() {
+      goalData.title = document.getElementById('goalTitle').value || 'Untitled Goal';
+      goalData.category = document.getElementById('goalCategory').value;
+      goalData.deadline = document.getElementById('goalDeadline').value;
+
+      const milestones = Array.from(document.querySelectorAll('.milestone-input-row input'))
+        .filter(input => input.value)
+        .length;
+
+      document.getElementById('summaryTitle').textContent = goalData.title;
+      document.getElementById('summaryCategory').textContent = goalData.category.charAt(0).toUpperCase() + goalData.category.slice(1);
+      document.getElementById('summaryPriority').textContent = goalData.priority.charAt(0).toUpperCase() + goalData.priority.slice(1);
+      document.getElementById('summaryDeadline').textContent = goalData.deadline || 'Not set';
+      document.getElementById('summaryMilestones').textContent = milestones;
+    }
+
+    function createGoal() {
+      updateSummary();
+
+      // Award XP for creating a goal
+      addXP(50, `Goal created: ${goalData.title}`);
+
+      alert(`🎉 Goal "${goalData.title}" created successfully!\n\n+50 XP earned! 🚀\n\nYou're now on your journey to success!`);
+      window.location.href = 'goals.html';
+    }
+
+    // Set default deadline to today + 30 days
+    const today = new Date();
+    const deadline = new Date(today.setDate(today.getDate() + 30));
+    document.getElementById('goalDeadline').valueAsDate = deadline;
+  </script>
+</body>
+</html>
